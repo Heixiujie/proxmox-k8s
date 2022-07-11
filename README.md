@@ -1,4 +1,4 @@
-Forked from pve-k8s, updated playbook.
+Pulled from pve-k8s, updated playbook.
 
 
 
