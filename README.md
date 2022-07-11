@@ -1,3 +1,7 @@
+Forked from pve-k8s, updated playbook.
+
+
+
 # pve-k8s
 
 Provision 3 lxc nodes k8s cluster on Proxmox using ansible.
