@@ -5,12 +5,30 @@
   tasks:
     - name: Install Helm
       shell: curl -L {{ helm_url }} | bash
+
+#    - name: copy flannel deploy yaml
+#      copy: 
+#        src: ./k8s/kube-flannel.yml
+#        dest: /root/kube-flannel.yml
+
+    - name: copy kube-ovn deploy script
+      copy: 
+        src: ./kube-ovn/install-1.9.sh
+        dest: /root/install-1.9.sh
+
+    - name: Add exe permission
+      ansible.builtin.file:
+        path: /root/install-1.9.sh
+        mode: u+x
+
+    - name: Install kube-ovn network plugin
+      command: /root/install-1.9.sh
     
-    - name: Add Flannel
-      command: kubectl apply -f "{{ flannel_url }}"
+#    - name: Add Flannel
+#      command: kubectl apply -f /root/kube-flannel.yml
       
-    - name: Add device plugin
-      command: kubectl apply -f "{{ nvidia_device_plugin }}"
+#    - name: Add device plugin
+#      command: kubectl apply -f "{{ nvidia_device_plugin }}"
 
     - name: copy ingress-nginx deploy yaml
       copy: 

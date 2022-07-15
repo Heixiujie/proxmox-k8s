@@ -3,6 +3,14 @@
   remote_user: root
 
   tasks:
+    - name: Add debian repo
+      shell: |
+        echo 'deb [arch=amd64] https://mirrors.ustc.edu.cn/debian bullseye main' > /etc/apt/sources.list
+
+    - name: Update repositories 
+      apt:
+        update_cache: yes
+
     - name: Install some utils 
       apt:
         pkg:
@@ -13,16 +21,17 @@
           - ca-certificates 
           - software-properties-common 
           - nmon
+          - gnupg
         update_cache: yes
     
     - name: Setup docker repo keys
       apt_key:
-        url: https://download.docker.com/linux/ubuntu/gpg
+        url: https://mirrors.ustc.edu.cn/docker-ce/linux/debian/gpg
         state: present
 
     - name: Add docker repo
       apt_repository:
-        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
+        repo: deb [arch=amd64] https://mirrors.ustc.edu.cn/docker-ce/linux/debian bullseye stable
         state: present 
 
     - name: Update repositories 
@@ -31,7 +40,7 @@
 
     - name: Install docker-ce 
       apt:
-        name: docker-ce
+        name: docker-ce=5:20.10.6~3-0~debian-bullseye
 
     - name: Change docker driver to systemd 
       shell: mkdir -p /etc/systemd/system/docker.service.d 

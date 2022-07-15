@@ -1,0 +1,10 @@
+- hosts: proxmox_cluster
+  gather_facts: false
+  remote_user: root
+
+  tasks:
+  - name: install ssh key
+    authorized_key:
+      user: root
+      key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+      state: present

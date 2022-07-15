@@ -9,4 +9,6 @@
 #   - A hostname/ip can be a member of multiple groups
 
 [proxmox]
-192.168.1.101
+10.66.249.167
+10.66.249.165
+10.66.249.163

@@ -3,8 +3,15 @@
     remote_user: root
 
     tasks: 
-      - name: enable bridged traffic to iptable 
-        shell: sysctl net.bridge.bridge-nf-call-iptables=1
+      - name: Append or update kernerl parameters
+        ansible.builtin.blockinfile:
+          path: /etc/sysctl.conf
+          block: |
+            net.bridge.bridge-nf-call-iptables=1
+            vm.swappiness = 0
+
+      - name: enable kernel parameters
+        shell: sysctl -p;swapoff -a
 
       - name: set rc.local 
         shell: |
@@ -39,26 +46,42 @@
     ## https://medium.com/@kvaps/run-kubernetes-in-lxc-container-f04aa94b6c9c 
     ## https://github.com/MarijnKoesen/kubernetes-in-proxmox-with-kubeadm-lxc-and-wireshark#step-1-prepare-the-proxmox-host
     tasks:
-      - name: Enabling the overlay kernel module on proxmox host
-        shell: echo overlay >> /etc/modules
+      - name: Append or update kernerl parameters
+        ansible.builtin.blockinfile:
+          path: /etc/sysctl.conf
+          block: |
+            net.netfilter.nf_conntrack_max = 131072
+            net.nf_conntrack_max = 131072
+            vm.swappiness = 0
+
+      - name: enable kernel parameters
+        shell: sysctl -p;swapoff -a
+
+      #- name: Enabling the overlay kernel module on proxmox host
+      #  shell: echo overlay >> /etc/modules
 
       - name: Configuring the overlay kernel module to be loaded on boot. 
-        lineinfile:
-          path: /etc/modules 
-          line: 'overlay'
-      
+        #lineinfile:
+        #  path: /etc/modules 
+        #  line: 'overlay'
+        ansible.builtin.blockinfile:
+          path: /etc/modules
+          block: |
+            overlay
+
       - name: Loading the overlay kernel module.
         modprobe: 
           name: overlay
 
       - name: Additional lxc config for k8s
-        shell: |
-          echo "## Additional config for k8s
-          lxc.apparmor.profile: unconfined
-          lxc.cap.drop: 
-          lxc.cgroup.devices.allow: a
-          lxc.mount.auto: proc:rw sys:rw
-          " >> /etc/pve/lxc/{{ item }}.conf 
+        ansible.builtin.blockinfile:
+          path: /etc/pve/lxc/{{ item }}.conf
+          block: |
+            echo "## Additional config for k8s
+            lxc.apparmor.profile: unconfined
+            lxc.cap.drop: 
+            lxc.cgroup2.devices.allow: a
+            lxc.mount.auto: "proc:rw sys:rw"
         with_items: "{{ id_list }}"
 
       - name: Stop containers 
@@ -74,3 +97,35 @@
 
       - name: Wait for 10 secons while restart
         wait_for: timeout=10
+
+
+  - hosts: proxmox_other
+    remote_user: root
+
+    ## Tweak lxc container to run k8s
+    ## https://medium.com/@kvaps/run-kubernetes-in-lxc-container-f04aa94b6c9c
+    ## https://github.com/MarijnKoesen/kubernetes-in-proxmox-with-kubeadm-lxc-and-wireshark#step-1-prepare-the-proxmox-host
+    tasks:
+      - name: Append or update kernerl parameters
+        ansible.builtin.blockinfile:
+          path: /etc/sysctl.conf
+          block: |
+            net.netfilter.nf_conntrack_max = 131072
+            net.nf_conntrack_max = 131072
+            vm.swappiness = 0 
+
+      - name: enable kernel parameters
+        shell: sysctl -p;swapoff -a
+
+      - name: Configuring the overlay kernel module to be loaded on boot.
+        #lineinfile:
+        #  path: /etc/modules
+        #  line: 'overlay'
+        ansible.builtin.blockinfile:
+          path: /etc/modules
+          block: |
+            overlay
+
+      - name: Loading the overlay kernel module.
+        modprobe:
+          name: overlay

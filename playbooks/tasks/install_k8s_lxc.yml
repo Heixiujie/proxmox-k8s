@@ -16,7 +16,7 @@
         state: present
 
     - name: Append to source list
-      shell: echo {{ k8s_apt_kube_key }} >> {{ k8s_sources_file }}
+      shell: echo {{ k8s_apt_kube_key }} > {{ k8s_sources_file }}
       args: 
         executable: /bin/bash 
 
@@ -27,7 +27,7 @@
     - name: Install kubernetes
       apt:
         pkg:
-          - kubelet
-          - kubeadm
-          - kubectl 
+          - kubelet=1.19.16-00
+          - kubeadm=1.19.16-00
+          - kubectl=1.19.16-00
         

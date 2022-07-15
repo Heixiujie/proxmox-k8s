@@ -3,12 +3,17 @@
   remote_user: root
 
   tasks:
-    - name: Remove swap from fstab  
-      lineinfile: path=/etc/fstab regexp='swap' state=absent
+    #- name: Remove swap from fstab  
+    #  lineinfile: path=/etc/fstab regexp='swap' state=absent
 
-    - name: Disable swap
-      shell: swapoff -a
-      ignore_errors: yes
+    #- name: Disable swap
+    #  shell: swapoff -a
+    #  ignore_errors: yes
+
+    - name: Restart containerd
+      shell: |
+        mv /etc/containerd/config.toml /etc/containerd/config.toml.bak
+        systemctl restart containerd
 
     - name: Check if kubeadm has already run
       stat: 
@@ -33,14 +38,18 @@
         etcd:
           local:
             dataDir: /var/lib/etcd
-        imageRepository: k8s.gcr.io
+        imageRepository: registry.aliyuncs.com/google_containers
         kind: ClusterConfiguration
-        kubernetesVersion: v1.19.2
+        kubernetesVersion: v1.19.0
         networking:
           dnsDomain: {{ dns_domain }}
           podSubnet: {{ pod_network }}
           serviceSubnet: 10.96.0.0/12
         scheduler: {}
+        ---
+        kind: KubeletConfiguration
+        apiVersion: kubelet.config.k8s.io/v1beta1
+        cgroupDriver: systemd
         ' > /root/kubeadm.yml
 
     #shell: kubeadm init {{ pod_network }} {{apiserver_advertise_address}} {{dns_domain}} {{preflight_options}}
