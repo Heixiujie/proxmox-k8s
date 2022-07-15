@@ -11,6 +11,16 @@
 #        src: ./k8s/kube-flannel.yml
 #        dest: /root/kube-flannel.yml
 
+    - name: copy start-ovs.sh script
+      copy: 
+        src: ./kube-ovn/start-ovs.sh
+        dest: /etc/kubernetes/start-ovs.sh
+
+    - name: Add exe permission
+      ansible.builtin.file:
+        path: /etc/kubernetes/start-ovs.sh
+        mode: u+x
+
     - name: copy kube-ovn deploy script
       copy: 
         src: ./kube-ovn/install-1.9.sh
